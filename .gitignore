@@ -1,0 +1,7 @@
+*.py
+.env
+*.txt
+node_modules
+package-lock.json
+*.json
+logs/
