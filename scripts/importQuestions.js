@@ -13,7 +13,7 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(async () => {
   console.log("✅ Connected to MongoDB");
 
-  const dataPath = path.join(__dirname, '../data/questions.json');
+  const dataPath = path.join(__dirname, '../data/sql.json');
   const rawData = fs.readFileSync(dataPath, 'utf-8');
   const questions = JSON.parse(rawData);
 
