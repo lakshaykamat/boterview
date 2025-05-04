@@ -25,7 +25,7 @@ mongoose.connect(process.env.MONGO_URI, {
       await doc.validate(); // Validates against the schema
       validQuestions.push(doc);
     } catch (err) {
-      console.error("❌ Validation error for question:", q.number, err.message);
+      console.error("❌ Validation error for question:", JSON.stringify(q), err.message);
     }
   }
 

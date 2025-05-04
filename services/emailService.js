@@ -37,7 +37,7 @@ const sendEmail = async (to, question) => {
   };
 
   try {
-    logger.info(`Preparing to send email to: ${to} for question #${question.number}`);
+    logger.info(`Preparing to send email to: ${to} for  question id - ${question._id}`);
     const info = await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent to ${to}: ${info.response}`);
     logger.info(`Email sent successfully to ${to}`);

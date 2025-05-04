@@ -2,7 +2,7 @@ const sendEmail = require('../services/emailService');
 const { getRandomQuestionBySubject } = require('./questionLoader');
 async function sendTestEmail() {
     try{
-        const question = await getRandomQuestionBySubject('JavaScript')
+        const question = await getRandomQuestionBySubject('SQL')
         await sendEmail('lakshayykamat@gmail.com',question)
         console.log('Test email sent successfully!')
     }catch(e){
