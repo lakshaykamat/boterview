@@ -6,15 +6,18 @@ const sendQuestionsToUsers = async () => {
   const users = await User.find({ active: true });
 
   for (const user of users) {
-    for (const subject of user.subjects) {
-      const question = await getRandomQuestionBySubject(subject);
-      if (!question) {
-        console.log(`⚠️ No question found for ${subject}`);
-        continue;
-      }
+    if (!user.subjects || user.subjects.length === 0) continue;
 
-      await sendEmail(user.email, question);
+    // Pick one random subject from user's list
+    const randomSubject = user.subjects[Math.floor(Math.random() * user.subjects.length)];
+    
+    const question = await getRandomQuestionBySubject(randomSubject);
+    if (!question) {
+      console.log(`⚠️ No question found for subject "${randomSubject}" for user ${user.email}`);
+      continue;
     }
+
+    await sendEmail(user.email, question);
 
     user.lastSent = new Date();
     await user.save();
