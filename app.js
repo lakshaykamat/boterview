@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const logger = require("./utils/logger");
 const path = require("path");
 const sendTestEmail = require("./utils/sendTestEmail");
+const emailLogsRoute = require("./routes/emailLogs")
 require("dotenv").config();
 
 process.on("uncaughtException", (err) => {
@@ -28,8 +29,10 @@ app.get("/", (req, res) => {
   res.send("📨 Interview Question Email Server Running!");
 });
 
+app.use('/api/logs', emailLogsRoute);
+
 if (process.env.NODE_ENV === "development") {
-  sendTestEmail();
+  //sendTestEmail();
 }
 
 app.listen(PORT, () => {
