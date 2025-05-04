@@ -24,7 +24,7 @@ const sendEmail = async (to, question) => {
   const emailHTML = emailTemplate({
     question: question.question,
     subject: question.subject,
-    difficulty: question.difficulty,
+    difficulty: question.difficulty || 'Unknown',
     source: question.source || 'Unknown',
     answer: htmlAnswer,
   });
