@@ -5,6 +5,7 @@ const logger = require("./utils/logger");
 const path = require("path");
 const sendTestEmail = require("./utils/sendTestEmail");
 const emailLogsRoute = require("./routes/emailLogs")
+const dashboardRoute = require("./routes/dashboard")
 require("dotenv").config();
 
 process.on("uncaughtException", (err) => {
@@ -25,9 +26,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use("/logs", express.static(path.join(__dirname, "logs")));
 
-app.get("/", (req, res) => {
-  res.send("📨 Interview Question Email Server Running!");
-});
+app.get("/",dashboardRoute);
 
 app.use('/api/logs', emailLogsRoute);
 
