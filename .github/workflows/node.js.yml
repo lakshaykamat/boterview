@@ -2,30 +2,64 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 22.x] # Test across multiple Node.js versions
 
-    - name: Use Node.js 22.x
+    steps:
+    # Checkout code
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # Set up Node.js with specified versions
+    - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: 22.x
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
 
+    # Cache npm dependencies to speed up subsequent runs
+    - name: Cache Node modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-modules-
+
+    # Install dependencies using npm ci (faster for CI)
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
-    - name: Build project
+    # Run linting (if you have linting setup)
+    - name: Run Linting
+      run: npm run lint
+
+    # Run tests (currently commented out)
+    # - name: Run tests
+    #   run: npm test
+
+    # Build the project (only if necessary)
+    - name: Build Project
       run: npm run build --if-present
 
+    # Check Node.js and npm versions
     - name: Check Node.js version
       run: node -v
 
     - name: Check npm version
       run: npm -v
+
+    # Optionally, you can deploy to a production environment after a successful run
+    # - name: Deploy to production
+    #   run: npm run deploy
