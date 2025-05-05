@@ -2,7 +2,6 @@
 .env
 *.txt
 node_modules
-package-lock.json
 logs/
 data/
 questions.json
