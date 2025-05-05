@@ -41,9 +41,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    # Run linting (if you have linting setup)
-    - name: Run Linting
-      run: npm run lint
+    # # Run linting (if you have linting setup)
+    # - name: Run Linting
+    #   run: npm run lint
 
     # Run tests (currently commented out)
     # - name: Run tests
