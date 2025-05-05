@@ -5,6 +5,7 @@ const { marked } = require('marked');
 const hljs = require('highlight.js');
 const transporter = require('../config/mailer');
 const logger = require('../utils/logger');
+const EmailLog = require("../models/EmailLog")
 
 marked.setOptions({
   highlight: function (code, lang) {
@@ -18,7 +19,7 @@ const templatePath = path.join(__dirname, '../templates/email.html');
 const templateSource = fs.readFileSync(templatePath, 'utf8');
 const emailTemplate = handlebars.compile(templateSource);
 
-const sendEmail = async (to, question) => {
+const sendEmail = async (user, question) => {
   const htmlAnswer = marked.parse(question.answer);
 
   const emailHTML = emailTemplate({
@@ -26,24 +27,39 @@ const sendEmail = async (to, question) => {
     subject: question.subject,
     difficulty: question.difficulty || 'Unknown',
     source: question.source || 'Unknown',
+    questionId: question._id,
     answer: htmlAnswer,
   });
 
   const mailOptions = {
     from: `"Interview Mailer" <${process.env.EMAIL_USER}>`,
-    to,
+    to:user.email,
     subject: question.question,
     html: emailHTML,
   };
-
   try {
-    logger.info(`Preparing to send email to: ${to} for  question id - ${question._id}`);
+    logger.info(`Preparing to send email to: ${user.email} for  question id - ${question._id}`);
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent to ${to}: ${info.response}`);
-    logger.info(`Email sent successfully to ${to}`);
+    console.log(`✅ Email sent to ${user.email}: ${info.response}`);
+    logger.info(`Email sent successfully to ${user.email}`);
+    await EmailLog.create({
+      userId: user._id,
+      email: user.email,
+      subject: question.subject,
+      questionId: question._id,
+      status: "sent",
+    });
   } catch (err) {
-    console.error(`❌ Failed to send email to ${to}:`, err.message);
-    logger.error(`Failed to send email to ${to}`, err);
+    console.error(`❌ Failed to send email to ${user.email}:`, err.message);
+    logger.error(`Failed to send email to ${user.email}`, err);
+    await EmailLog.create({
+      userId: user._id,
+      email: user.email,
+      subject: subject,
+      questionId: question._id || null,
+      status: "failed",
+      error: err.message,
+    });
   }
 };
 

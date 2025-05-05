@@ -1,5 +1,4 @@
 const User = require("../models/User");
-const EmailLog = require("../models/EmailLog");
 const sendEmail = require("../services/emailService");
 const { getRandomQuestionBySubject } = require("../utils/questionLoader");
 
@@ -21,31 +20,11 @@ const sendQuestionsToUsers = async () => {
       continue;
     }
 
-    await sendEmail(user.email, question);
-
-    try {
-      await EmailLog.create({
-        userId: user._id,
-        email: user.email,
-        subject: question.subject,
-        questionId: question._id,
-        status: "sent",
-      });
-    } catch (err) {
-      console.error(`❌ Failed to send to ${user.email}: ${err.message}`);
-      await EmailLog.create({
-        userId: user._id,
-        email: user.email,
-        subject: subject,
-        questionId: question._id || null,
-        status: "failed",
-        error: err.message,
-      });
-    }
+    await sendEmail(user, question);
 
     user.lastSent = new Date();
     await user.save();
   }
 };
-
+sendQuestionsToUsers()
 module.exports = sendQuestionsToUsers;
