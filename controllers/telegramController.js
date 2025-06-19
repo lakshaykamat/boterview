@@ -35,12 +35,7 @@ const sendTelegramQuestion = async () => {
     if (!q) continue; // couldn't get a new question
 
     // Format message
-    const message = `*💬 Interview Question:*  
-*${q.question}*
-
--------------------------
-
-*Answer:*  
+    const message = ` *${q.question}*\n
 ${q.answer}
 
 -------------------------

@@ -77,7 +77,7 @@ function handleSettings(bot) {
 📬 *Email:* ${user.email || "_Not set_"}
 📚 *Subjects:* ${user.subjects.join(", ") || "_None_"}
 ✅ *Active:* ${user.active ? "Yes" : "No"}
-📅 *Last Question:* ${user.lastSent ? new Date(user.lastSent).toLocaleString() : "Never"}`;
+📅 *Last Question:* ${user.lastSent ? new Date(user.lastSent).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never"}`;
 
     bot.sendMessage(chatId, statusMsg, { parse_mode: "Markdown" });
   });

@@ -40,7 +40,7 @@ function handleStart(bot) {
     }]));
     keyboard.push([{ text: "✅ Done", callback_data: "submit_subjects" }]);
 
-    await bot.sendMessage(chatId, "📚 *Choose your subjects:*", {
+    await bot.sendMessage(chatId, "📚 *Choose your subjects:* We'll send you questions from these subjects periodically. (You can select more than one.)", {
       parse_mode: "Markdown",
       reply_markup: { inline_keyboard: keyboard }
     });
@@ -116,7 +116,7 @@ function handleStart(bot) {
         { upsert: true }
       );
 
-      await bot.sendMessage(chatId, `✅ Subscribed!\n📚 Subjects: *${subjects.join(", ")}*`, {
+      await bot.sendMessage(chatId, `✅ Subscribed!\n📚 Subjects: *${subjects.join(", ")}*\n\nYou'll now receive questions from these subjects at 9 AM, 12 PM, 3 PM, 6 PM, and 9 PM every day.`, {
         parse_mode: "Markdown",
         ...mainMenuKeyboard
       });
