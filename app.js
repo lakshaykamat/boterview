@@ -8,7 +8,7 @@ const emailLogsRoute = require("./routes/emailLogs");
 const messageLogsRoute = require("./routes/messageLogs");
 const dashboardRoute = require("./routes/dashboard");
 require("dotenv").config();
-require("./bot/telegramBot"); // starts bot
+// require("./bot/telegramBot"); // starts bot
 process.on("uncaughtException", (err) => {
   logger.error("Uncaught Exception:", err);
   process.exit(1);

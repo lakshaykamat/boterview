@@ -1,3 +1,8 @@
+const Question = require("../models/Question");
+const User = require("../models/User");
+const { bot } = require("../bot/telegramBot");
+
+const MessageLog = require("../models/MessageLog");
 const sendTelegramQuestion = async () => {
   const users = await User.find({ active: true, chatId: { $ne: null } });
 
