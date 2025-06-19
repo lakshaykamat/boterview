@@ -26,5 +26,5 @@ const sendQuestionsToUsers = async () => {
     await user.save();
   }
 };
-sendQuestionsToUsers()
+// sendQuestionsToUsers()
 module.exports = sendQuestionsToUsers;

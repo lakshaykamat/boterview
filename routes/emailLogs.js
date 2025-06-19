@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const EmailLog = require('../models/EmailLog');
 
-router.get('/', async (req, res) => {
+router.get('/email', async (req, res) => {
   try {
     const logs = await EmailLog.find().sort({ sentAt: -1 }).limit(100);
 
