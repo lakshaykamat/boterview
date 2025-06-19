@@ -1,26 +1,22 @@
-const Question = require("../models/Question");
-const User = require("../models/User");
-const { bot } = require("../bot/telegramBot");
-const dayjs = require("dayjs");
-const MessageLog = require("../models/MessageLog");
-
 const sendTelegramQuestion = async () => {
-  // const today = dayjs().startOf("day");
-
   const users = await User.find({ active: true, chatId: { $ne: null } });
 
   for (const user of users) {
     if (!user.subjects?.length) continue;
 
-    // Try up to 3 times to avoid sending the same question
     let q = null;
     for (let attempt = 0; attempt < 3; attempt++) {
+      // 🎯 Step 1: Pick a random subject from the user's subjects
+      const randomSubject =
+        user.subjects[Math.floor(Math.random() * user.subjects.length)];
+
+      // 🎯 Step 2: Pick a random question from that subject
       const result = await Question.aggregate([
-        { $match: { subject: { $in: user.subjects } } },
+        { $match: { subject: randomSubject } },
         { $sample: { size: 1 } },
       ]);
 
-      if (!result.length) break;
+      if (!result.length) continue;
 
       const candidate = result[0];
       if (
@@ -34,14 +30,14 @@ const sendTelegramQuestion = async () => {
 
     if (!q) continue; // couldn't get a new question
 
-    // Format message
-    const message = ` *${q.question}*\n
+    // 📝 Format message
+    const message = `*${q.question}*\n\n
 ${q.answer}
 
 -------------------------
 
 📚 *Subject:* ${q.subject}  
-🧠 *Difficulty:* ${q.difficulty}  
+🧠 *Difficulty:* ${q.difficulty || "Unkown"}  
 📌 *Source:* ${q.source || "Unknown"}
 `;
 
@@ -55,7 +51,7 @@ ${q.answer}
         text: message,
         success: true,
       });
-      // Update user
+
       await User.updateOne(
         { _id: user._id },
         {

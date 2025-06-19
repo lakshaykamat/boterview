@@ -14,7 +14,7 @@ const mainMenuKeyboard = {
   reply_markup: {
     keyboard: [
       ["/subjects", "/status"],
-      ["/stop"]
+      ["/stop","/start"]
     ],
     resize_keyboard: true,
     one_time_keyboard: false
@@ -120,6 +120,7 @@ function handleStart(bot) {
         parse_mode: "Markdown",
         ...mainMenuKeyboard
       });
+
     }
   });
 }
