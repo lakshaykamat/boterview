@@ -23,6 +23,7 @@ const scheduleEmails = () => {
 
 const scheduleTelegramMessage = () => {
   const times = ['0 9 * * *', '0 12 * * *', '0 15 * * *', '0 18 * * *', '0 21 * * *'];
+  //const times = ['*/5 * * * * *']
 
   times.forEach((time) => {
     cron.schedule(time, sendTelegramQuestion, {
