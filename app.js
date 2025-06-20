@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 3000;
 })();
 app.use("/logs", express.static(path.join(__dirname, "logs")));
 
-app.get("/", dashboardRoute);
+app.get("/", (req,res)=>res.status(200).send("server is up!"));
 
 app.use("/api/logs", emailLogsRoute);
 app.use("/api/logs", messageLogsRoute);
