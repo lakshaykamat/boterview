@@ -3,12 +3,13 @@ const { scheduleEmails, scheduleTelegramMessage } = require("./jobs/scheduler");
 const connectDB = require("./config/db");
 const logger = require("./utils/logger");
 const path = require("path");
+const cron = require("node-cron");
 // const sendTestEmail = require("./utils/sendTestEmail");
 const emailLogsRoute = require("./routes/emailLogs");
 const messageLogsRoute = require("./routes/messageLogs");
 const dashboardRoute = require("./routes/dashboard");
+const retryFailedMessages = require("./controllers/retryFailedMessages");
 require("dotenv").config();
-// require("./bot/telegramBot"); // starts bot
 process.on("uncaughtException", (err) => {
   logger.error("Uncaught Exception:", err);
   process.exit(1);
@@ -35,7 +36,7 @@ app.use("/api/logs", messageLogsRoute);
 if (process.env.NODE_ENV === "development") {
   //sendTestEmail();
 }
-
+cron.schedule("*/5 * * * *", retryFailedMessages); // every 5 minutes
 app.listen(PORT, () => {
   console.log(`🚀 Server started on http://localhost:${PORT}`);
 });
