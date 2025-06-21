@@ -9,6 +9,7 @@ const emailLogsRoute = require("./routes/emailLogs");
 const messageLogsRoute = require("./routes/messageLogs");
 const dashboardRoute = require("./routes/dashboard");
 const retryFailedMessages = require("./controllers/retryFailedMessages");
+const sendTestQuestionToAdmin = require("./tests/testMessage");
 require("dotenv").config();
 process.on("uncaughtException", (err) => {
   logger.error("Uncaught Exception:", err);
@@ -34,7 +35,7 @@ app.use("/api/logs", emailLogsRoute);
 app.use("/api/logs", messageLogsRoute);
 
 if (process.env.NODE_ENV === "development") {
-  //sendTestEmail();
+  //sendTestQuestionToAdmin();
 }
 cron.schedule("*/5 * * * *", retryFailedMessages); // every 5 minutes
 app.listen(PORT, () => {

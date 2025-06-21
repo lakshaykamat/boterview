@@ -13,7 +13,7 @@ const getAllSubjects = async () => {
 const mainMenuKeyboard = {
   reply_markup: {
     keyboard: [
-      ["/subjects", "/status"],
+      ["/subjects", "/status","/history"],
       ["/stop","/start"]
     ],
     resize_keyboard: true,

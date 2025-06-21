@@ -6,8 +6,8 @@ const UserSchema = new mongoose.Schema(
       type: String,
       lowercase: true,
       trim: true,
-      sparse: true, // allows multiple nulls
-      required:true,
+      sparse: true,
+      required: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"],
     },
     chatId: {
@@ -36,6 +36,14 @@ const UserSchema = new mongoose.Schema(
     lastQuestionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Question",
+      default: null,
+    },
+    streak: {
+      type: Number,
+      default: 0,
+    },
+    lastActiveDate: {
+      type: Date,
       default: null,
     },
   },

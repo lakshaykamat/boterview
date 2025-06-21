@@ -3,6 +3,7 @@ const handleStart = require("./handlers/start.handler");
 const handleStop = require("./handlers/stop.handler");
 const handleSettings = require("./handlers/setting.handler");
 const handleAdmin = require("./handlers/admin.handler");
+const handleMarkSeen = require("./handlers/handleSeen");
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN
 
@@ -21,4 +22,5 @@ handleStart(bot);
 handleStop(bot);
 handleSettings(bot)
 handleAdmin(bot)
+handleMarkSeen(bot)
 module.exports = { bot };

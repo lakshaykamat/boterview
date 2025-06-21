@@ -49,7 +49,16 @@ const sendTelegramQuestion = async () => {
 `;
 
     try {
-      await bot.sendMessage(user.chatId, message, { parse_mode: "Markdown" });
+      // await bot.sendMessage(user.chatId, message, { parse_mode: "Markdown" });
+      await bot.sendMessage(user.chatId, message, {
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "Mark as Seen", callback_data: `seen_${user._id}` }],
+            { text: "Report", callback_data: `report_${q._id}` },
+          ],
+        },
+      });
 
       await MessageLog.create({
         userId: user._id,
@@ -58,7 +67,7 @@ const sendTelegramQuestion = async () => {
         text: message,
         success: true,
         retryCount: 0,
-        lastTriedAt: new Date()
+        lastTriedAt: new Date(),
       });
 
       await User.updateOne(
@@ -79,7 +88,7 @@ const sendTelegramQuestion = async () => {
         success: false,
         error: err.message,
         retryCount: 1,
-        lastTriedAt: new Date()
+        lastTriedAt: new Date(),
       });
     }
   }
