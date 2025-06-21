@@ -7,7 +7,7 @@ const retryFailedMessages = async () => {
 
   const failedLogs = await MessageLog.find({
     success: false,
-    retryCount: { $lt: 3 },
+    retryCount: { $lt: 10 },
     sentAt: { $gte: oneDayAgo },
     lastTriedAt: { $lt: fiveMinutesAgo }
   });
