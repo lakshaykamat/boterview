@@ -32,10 +32,27 @@ function handleHistory(bot) {
 `;
 
       try {
-        await bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+        await bot.sendMessage(
+          chatId,
+          message,
+          { parse_mode: "Markdown" },
+          {
+            reply_markup: {
+              inline_keyboard: [
+                { text: "Report", callback_data: `report_${q._id}` },
+              ],
+            },
+          }
+        );
       } catch (err) {
         // If Markdown fails (e.g., due to bad formatting), resend as plain text
-        await bot.sendMessage(chatId, message); // no parse_mode
+        await bot.sendMessage(chatId, message, {
+          reply_markup: {
+            inline_keyboard: [
+              { text: "Report", callback_data: `report_${q._id}` },
+            ],
+          },
+        }); // no parse_mode
       }
     }
   });
