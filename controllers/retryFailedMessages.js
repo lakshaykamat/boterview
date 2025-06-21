@@ -3,13 +3,14 @@ const { bot } = require("../bot/telegramBot");
 
 const retryFailedMessages = async () => {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);   // 24 hours ago
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);    // 5 minutes ago
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);       // 1 hour ago
+
 
   const failedLogs = await MessageLog.find({
     success: false,
     retryCount: { $lt: 10 },
     sentAt: { $gte: oneDayAgo },
-    lastTriedAt: { $lt: fiveMinutesAgo }
+    lastTriedAt: { $lt: oneHourAgo }
   });
 
   for (const log of failedLogs) {
@@ -26,7 +27,7 @@ const retryFailedMessages = async () => {
     await log.save();
   }
 
-  console.log(`🔁 Retried ${failedLogs.length} failed messages`);
+  console.log(`Retried ${failedLogs.length} failed messages`);
 };
 
 module.exports = retryFailedMessages;
