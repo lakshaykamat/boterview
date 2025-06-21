@@ -1,37 +1,39 @@
-# 📬 Interview Mailer
+# Boterview
 
-**Interview Mailer** is a Node.js-based system that sends technical and non-technical interview questions to users via email multiple times a day. It helps users prepare for interviews by consistently delivering questions and reinforcing learning through reminders.
-
----
-
-## ✨ Features
-
-* 📧 **Automated Emailing**: Sends curated interview questions multiple times daily.
-* 🧠 **Subjects by Choice**: Users receive questions based on selected subjects.
-* 📅 **Scheduled Delivery**: Uses `node-cron` to schedule email sends (5 times/day).
-* 🧾 **Markdown Support**: Renders answers using markdown with code highlighting.
-* 🧑‍💻 **CLI User Management**: Easily add, update, or list users and subjects.
-* 🛡️ **Validation**: Ensures valid email formats and allowed subject names.
+**Boterview** is a Node.js-based system that sends technical and non-technical interview questions to users via email and Telegram multiple times a day. It helps users stay consistent with interview preparation by delivering questions regularly and reinforcing learning through scheduled reminders.
 
 ---
 
-## 📦 Tech Stack
+## Features
+
+* Sends carefully selected interview questions multiple times a day.
+* Supports delivery through both email and Telegram.
+* Users can choose specific subjects to focus on.
+* Scheduling is handled using `node-cron`, with five deliveries each day.
+* Markdown support for well-formatted answers, including code highlighting.
+* Command-line tools for managing users and their subject preferences.
+* Input validation for email formats and subject names.
+
+---
+
+## Tech Stack
 
 * Node.js
-* MongoDB (via Mongoose)
-* Nodemailer
-* Marked (Markdown parser)
-* Cron Jobs (`node-cron`)
+* MongoDB (with Mongoose)
+* Nodemailer (for emails)
+* Telegram Bot API (`node-telegram-bot-api`)
+* Marked (Markdown rendering)
+* Cron jobs using `node-cron`
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/interview-mailer.git
-cd interview-mailer
+git clone https://github.com/lakshaykamat/boterview.git
+cd boterview
 ```
 
 ### 2. Install dependencies
@@ -40,73 +42,57 @@ cd interview-mailer
 npm install
 ```
 
-### 3. Create `.env` file
+### 3. Create a `.env` file
 
 ```
 EMAIL_USER=your-email@example.com
 EMAIL_PASS=your-email-password
 EMAIL_TO=recipient@example.com
+TELEGRAM_TOKEN=your-telegram-bot-token
 NODE_ENV=development
 MONGO_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/database-name?retryWrites=true&w=majority
 ```
 
 ---
 
-## 📅 Scheduling Emails
+## Scheduling Questions
 
-Emails are sent 5 times per day via cron:
+Questions are sent five times a day using cron jobs. Here’s the current schedule (24-hour format):
 
-| Time (24h) | Description   |
-| ---------- | ------------- |
-| 09:00      | Morning Push  |
-| 11:00      | Mid-Morning   |
-| 13:00      | Afternoon     |
-| 15:00      | Mid-Afternoon |
-| 18:00      | Evening       |
+| Time  | Description      |
+| ----- | ---------------- |
+| 09:00 | Morning push     |
+| 11:00 | Mid-morning      |
+| 13:00 | Afternoon        |
+| 15:00 | Mid-afternoon    |
+| 18:00 | Evening delivery |
 
-To enable scheduling, make sure `scheduleEmails()` is called in your main server file.
-
----
-
-## 👤 Managing Users
-
-### Add or Update User
-
-```bash
-node scripts/manageUser.js add
-```
-
-### List Users
-
-```bash
-node scripts/manageUser.js list
-```
+Make sure to call both `scheduleEmails()` and `scheduleTelegram()` from the main server file to enable this.
 
 ---
 
-## 📬 Email Template
+## Message Format
 
-* Clean, responsive HTML template
-* Code blocks styled with syntax highlighting
-* Minimal, readable design
-
----
-
-## 🛠️ Future Improvements
-
-* Web dashboard for managing users and subjects
-* User feedback system on questions
-* Admin panel to add new questions easily
+* Emails use a clean, responsive HTML layout.
+* Telegram messages support Markdown formatting.
+* Code snippets are syntax-highlighted and easy to read.
 
 ---
 
-## 🤝 Contributing
+## Future Improvements
 
-Feel free to fork and open pull requests. Bug fixes and improvements are welcome!
+* Web dashboard for managing users and question topics
+* Feedback collection from users on each question
+* Admin panel for adding and editing questions with version history
 
 ---
 
-## 🧑‍💼 Author
+## Contributing
+
+Contributions are welcome. Feel free to fork the project, suggest improvements, or fix bugs through pull requests.
+
+---
+
+## Author
 
 **Lakshay Kamat**
-
