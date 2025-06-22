@@ -10,9 +10,9 @@ router.get("/bot", async (req, res) => {
       .populate("userId", "email")
       .populate("questionId", "subject") // Populate just subject
       .sort({ sentAt: -1 })
-      .limit(50);
+      .limit(100);
 
-    let output = `Message Delivery Logs (Latest 10 Entries)\n`;
+    let output = `Message Delivery Logs (Latest 100 Entries)\n`;
     output += `==================================================\n\n`;
 
     logs.forEach((log, index) => {
