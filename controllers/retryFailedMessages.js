@@ -1,5 +1,7 @@
 const MessageLog = require("../models/MessageLog");
 const { bot } = require("../bot/telegramBot");
+const User = require("../models/User");
+const Question = require("../models/Question");
 
 const retryFailedMessages = async () => {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
@@ -24,15 +26,26 @@ const retryFailedMessages = async () => {
     };
 
     try {
+      // Optional: Fetch user and question (only if needed for buttons)
+      const user = await User.findById(log.userId).lean();
+      const q = log.questionId ? await Question.findById(log.questionId).lean() : null;
 
-      await bot.sendMessage(log.chatId, log.text, {
-        reply_markup: {
+      const options = {};
+
+      // Only show inline buttons if it's a question message
+      if (user && q) {
+        options.reply_markup = {
           inline_keyboard: [
-            [{ text: "Mark as Seen", callback_data: `seen_${user._id}` }],
-            { text: "Report", callback_data: `report_${q._id}` },
+            [
+              { text: "Mark as Seen", callback_data: `seen_${user._id}` },
+              { text: "Report", callback_data: `report_${q._id}` },
+            ],
           ],
-        },
-      });
+        };
+        options.parse_mode = "Markdown";
+      }
+
+      await bot.sendMessage(log.chatId, log.text, options);
       newLog.success = true;
       newLog.error = null;
     } catch (err) {

@@ -35,7 +35,7 @@ app.use("/api/logs", emailLogsRoute);
 app.use("/api/logs", messageLogsRoute);
 
 if (process.env.NODE_ENV === "development") {
-  //sendTestQuestionToAdmin();
+  sendTestQuestionToAdmin();
 }
 cron.schedule("*/5 * * * *", retryFailedMessages); // every 5 minutes
 app.listen(PORT, () => {

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const MessageLog = require("../models/MessageLog");
 
+
 // GET /bot — Show last 10 message logs
 router.get("/bot", async (req, res) => {
   try {
