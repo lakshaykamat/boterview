@@ -35,7 +35,7 @@ router.get("/bot", async (req, res) => {
         output += `- Question ID : ${questionId}\n`;
       }
 
-      output += `- Message     :\n${log.text}\n`;
+      //output += `- Message     :\n${log.text}\n`;
 
       if (!log.success) {
         output += `- Error       : ${log.error}\n`;
