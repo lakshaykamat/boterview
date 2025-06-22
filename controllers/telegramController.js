@@ -54,8 +54,10 @@ const sendTelegramQuestion = async () => {
         parse_mode: "Markdown",
         reply_markup: {
           inline_keyboard: [
-            [{ text: "Mark as Seen", callback_data: `seen_${user._id}` }],
-            { text: "Report", callback_data: `report_${q._id}` },
+            [
+              { text: "Mark as Seen", callback_data: `seen_${user._id}` },
+              { text: "Report", callback_data: `report_${q._id}` },
+            ],
           ],
         },
       });
