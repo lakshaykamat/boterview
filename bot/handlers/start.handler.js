@@ -1,15 +1,10 @@
 const User = require("../../models/User");
-const Question = require("../../models/Question");
+const getSubjectsFromR1 = require("../../utils/getSubjects");
 
 const userSubjectSelections = new Map();
 const pendingEmailInput = new Set();
+const pendingJobRoleInput = new Set();
 
-const getAllSubjects = async () => {
-  const subjects = await Question.distinct("subject");
-  return subjects.sort();
-};
-
-// Menu keyboard (reply keyboard)
 const mainMenuKeyboard = {
   reply_markup: {
     keyboard: [
@@ -27,9 +22,7 @@ const sendMainMenu = async (bot, chatId, isAdmin) => {
     ["/subjects", "/history"],
     ["/stop"],
   ];
-
   const adminCommands = [["/broadcast", "/stats"]];
-
   const keyboard = isAdmin ? [...userCommands, ...adminCommands] : userCommands;
 
   await bot.sendMessage(chatId, "📋 Here's your menu:", {
@@ -42,7 +35,6 @@ const sendMainMenu = async (bot, chatId, isAdmin) => {
 };
 
 function handleStart(bot) {
-  // Handle /start command
   bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const existing = await User.findOne({ chatId });
@@ -51,76 +43,78 @@ function handleStart(bot) {
       return bot.sendMessage(chatId, "✅ You're already subscribed.");
     }
 
-    const subjects = await getAllSubjects();
-    userSubjectSelections.set(chatId, []);
-
-    const keyboard = subjects.map((sub) => [
-      {
-        text: sub,
-        callback_data: `subject_${sub}`,
-      },
-    ]);
-    keyboard.push([{ text: "✅ Done", callback_data: "submit_subjects" }]);
+    pendingJobRoleInput.add(chatId);
 
     await bot.sendMessage(
       chatId,
-      "📚 *Choose your subjects:* We'll send you questions from these subjects periodically. (You can select more than one.)",
-      {
-        parse_mode: "Markdown",
-        reply_markup: { inline_keyboard: keyboard },
-      }
+      "Please enter your desired job role (e.g., Frontend Developer, Data Analyst, ML Engineer):",
+      { reply_markup: { force_reply: true } }
     );
+
     await sendMainMenu(bot, chatId, existing?.isAdmin);
   });
 
-  // Handle subject selection
-  bot.on("callback_query", async (query) => {
-    const chatId = query.message.chat.id;
-    const data = query.data;
-
-    if (data.startsWith("subject_")) {
-      const subject = data.replace("subject_", "");
-      const selected = userSubjectSelections.get(chatId) || [];
-
-      if (!selected.includes(subject)) selected.push(subject);
-      else selected.splice(selected.indexOf(subject), 1);
-
-      userSubjectSelections.set(chatId, selected);
-      return bot.answerCallbackQuery(query.id, {
-        text: `Selected: ${selected.join(", ") || "None"}`,
-      });
-    }
-
-    if (data === "submit_subjects") {
-      const subjects = userSubjectSelections.get(chatId) || [];
-      if (subjects.length === 0) {
-        return bot.answerCallbackQuery(query.id, {
-          text: "❌ Select at least one subject!",
-        });
-      }
-
-      userSubjectSelections.delete(chatId);
-      pendingEmailInput.add(chatId);
-
-      await bot.sendMessage(chatId, "📧 Please enter your email address:", {
-        reply_markup: { force_reply: true },
-      });
-
-      return bot.answerCallbackQuery(query.id);
-    }
-  });
-
-  // Handle text messages (email + menu buttons)
+  // Handle button menu clicks
   bot.on("message", async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text?.trim();
 
-    // Handle menu clicks
     if (text === "📚 Subjects")
       return bot.emit("text", { ...msg, text: "/subjects" });
     if (text === "📊 Status")
       return bot.emit("text", { ...msg, text: "/status" });
     if (text === "🛑 Stop") return bot.emit("text", { ...msg, text: "/stop" });
+
+    // Handle job role input
+    if (pendingJobRoleInput.has(chatId)) {
+      pendingJobRoleInput.delete(chatId);
+
+      await bot.sendMessage(
+        chatId,
+        `⏳ Generating interview subjects for: *${text}*`,
+        {
+          parse_mode: "Markdown",
+        }
+      );
+
+      try {
+        const subjects = await getSubjectsFromR1(text);
+        userSubjectSelections.set(chatId, subjects);
+
+        const keyboard = [
+          ...subjects.map((s) => [
+            { text: s, callback_data: `subject_static` },
+          ]),
+          [
+            {
+              text: "🔁 Regenerate Subjects",
+              callback_data: "regenerate_subjects",
+            },
+            { text: "✅ Confirm Subjects", callback_data: "submit_subjects" },
+          ],
+        ];
+
+        await bot.sendMessage(
+          chatId,
+          `📚 Based on your role *${text}*, here are your suggested subjects:
+
+${subjects.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+
+🔄 You can *Regenerate* or *Confirm* your subjects now.
+📝 Or use the /subjects command later to explicitly set your subject list.`,
+          {
+            parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: keyboard },
+          }
+        );
+      } catch (err) {
+        console.error("Subject generation error:", err);
+        await bot.sendMessage(
+          chatId,
+          "❌ Failed to fetch subjects. Please try again."
+        );
+      }
+    }
 
     // Handle email input
     if (pendingEmailInput.has(chatId)) {
@@ -133,9 +127,7 @@ function handleStart(bot) {
       }
 
       pendingEmailInput.delete(chatId);
-
-      const subjects =
-        (await User.findOne({ chatId }).then((u) => u?.subjects)) || [];
+      const subjects = userSubjectSelections.get(chatId) || [];
 
       await User.findOneAndUpdate(
         { chatId },
@@ -153,13 +145,49 @@ function handleStart(bot) {
         chatId,
         `✅ Subscribed!\n📚 Subjects: *${subjects.join(
           ", "
-        )}*\n\nYou'll now receive questions from these subjects at 9 AM, 12 PM, 3 PM, 6 PM, and 9 PM every day.`,
+        )}*\n\nYou'll now receive questions at 9 AM, 12 PM, 3 PM, 6 PM, and 9 PM daily.`,
         {
           parse_mode: "Markdown",
           ...mainMenuKeyboard,
         }
       );
     }
+  });
+
+  // Handle subject confirm/regenerate buttons
+  bot.on("callback_query", async (query) => {
+    const chatId = query.message.chat.id;
+    const data = query.data;
+
+    if (data === "regenerate_subjects") {
+      pendingJobRoleInput.add(chatId);
+      await bot.sendMessage(
+        chatId,
+        "🔁 Please enter your job role again to regenerate subjects:",
+        { reply_markup: { force_reply: true } }
+      );
+      return bot.answerCallbackQuery(query.id);
+    }
+
+    if (data === "submit_subjects") {
+      const subjects = userSubjectSelections.get(chatId);
+      if (!subjects || subjects.length === 0) {
+        return bot.answerCallbackQuery(query.id, {
+          text: "❌ No subjects selected.",
+        });
+      }
+
+      userSubjectSelections.set(chatId, subjects);
+      pendingEmailInput.add(chatId);
+
+      await bot.sendMessage(chatId, "📧 Please enter your email address:", {
+        reply_markup: { force_reply: true },
+      });
+
+      return bot.answerCallbackQuery(query.id);
+    }
+
+    return bot.answerCallbackQuery(query.id);
   });
 }
 
