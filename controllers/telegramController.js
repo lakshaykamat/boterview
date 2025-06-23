@@ -19,7 +19,7 @@ const sendTelegramQuestion = async () => {
         subjectTried =
           user.subjects[Math.floor(Math.random() * user.subjects.length)];
 
-        console.log(subjectTried)
+        console.log(subjectTried);
         const result = await getQuestionFromR1(subjectTried);
 
         if (!result || typeof result !== "object") continue;
@@ -27,7 +27,10 @@ const sendTelegramQuestion = async () => {
         q = result;
         break; // Valid question found
       } catch (err) {
-        console.warn(`⚠️ Attempt ${attempt + 1} failed for user ${user._id}:`, err.message);
+        console.warn(
+          `⚠️ Attempt ${attempt + 1} failed for user ${user._id}:`,
+          err.message
+        );
         continue;
       }
     }
@@ -61,7 +64,10 @@ const sendTelegramQuestion = async () => {
         source: q.source,
       });
     } catch (err) {
-      console.error(`❌ Failed to save question for user ${user._id}:`, err.message);
+      console.error(
+        `❌ Failed to save question for user ${user._id}:`,
+        err.message
+      );
 
       await MessageLog.create({
         userId: user._id,
@@ -90,6 +96,7 @@ const sendTelegramQuestion = async () => {
 
     try {
       await bot.sendMessage(user.chatId, message, {
+        parse_mode: "Markdown", // Enable Markdown parsing
         reply_markup: {
           inline_keyboard: [
             [
@@ -121,7 +128,10 @@ const sendTelegramQuestion = async () => {
         }
       );
     } catch (err) {
-      console.error(`❌ Failed to send message to user ${user._id}:`, err.message);
+      console.error(
+        `❌ Failed to send message to user ${user._id}:`,
+        err.message
+      );
 
       await MessageLog.create({
         userId: user._id,
