@@ -1,15 +1,10 @@
 const User = require("../../models/User");
-const Question = require("../../models/Question");
 
-const userSubjectUpdates = new Map(); // chatId => true
-
-const getAllSubjects = async () => {
-  const subjects = await Question.distinct("subject");
-  return subjects.sort();
-};
+const userSubjectUpdates = new Map(); // chatId => string[]
+const pendingSubjectInput = new Set();
 
 function handleSettings(bot) {
-  // 🔁 /subjects — Update Subjects
+  // /subjects — Let user input custom subjects manually
   bot.onText(/\/subjects/, async (msg) => {
     const chatId = msg.chat.id;
 
@@ -18,52 +13,43 @@ function handleSettings(bot) {
       return bot.sendMessage(chatId, "❌ You're not subscribed. Use /start first.");
     }
 
-    const allSubjects = await getAllSubjects();
-    const keyboard = allSubjects.map(sub => ([{
-      text: sub,
-      callback_data: `update_subject_${sub}`
-    }]));
-    keyboard.push([{ text: "✅ Save", callback_data: "save_subject_update" }]);
-
-    userSubjectUpdates.set(chatId, []);
-    bot.sendMessage(chatId, "🔧 Choose new subjects:", {
-      reply_markup: { inline_keyboard: keyboard },
-    });
+    pendingSubjectInput.add(chatId);
+    bot.sendMessage(
+      chatId,
+      "✍️ Please type your desired subjects, separated by commas (e.g., Python, System Design, APIs):",
+      { reply_markup: { force_reply: true } }
+    );
   });
 
-  // Handle subject selection and saving
-  bot.on("callback_query", async (query) => {
-    const chatId = query.message.chat.id;
-    const data = query.data;
+  // Handle subject entry
+  bot.on("message", async (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text?.trim();
 
-    if (data.startsWith("update_subject_")) {
-      const subject = data.replace("update_subject_", "");
-      const selected = userSubjectUpdates.get(chatId) || [];
+    if (pendingSubjectInput.has(chatId)) {
+      pendingSubjectInput.delete(chatId);
 
-      if (!selected.includes(subject)) selected.push(subject);
-      else selected.splice(selected.indexOf(subject), 1);
+      const subjects = text
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
 
-      userSubjectUpdates.set(chatId, selected);
-      return bot.answerCallbackQuery(query.id, { text: `Selected: ${selected.join(", ")}` });
-    }
-
-    if (data === "save_subject_update") {
-      const newSubjects = userSubjectUpdates.get(chatId);
-      if (!newSubjects || newSubjects.length === 0) {
-        return bot.answerCallbackQuery(query.id, { text: "❌ Select at least one subject!" });
+      if (subjects.length === 0) {
+        return bot.sendMessage(chatId, "❌ No valid subjects found. Please try again using /subjects.");
       }
 
-      await User.updateOne({ chatId }, { subjects: newSubjects });
+      await User.updateOne({ chatId }, { subjects });
       userSubjectUpdates.delete(chatId);
 
-      bot.sendMessage(chatId, `✅ Subjects updated to:\n*${newSubjects.join(", ")}*`, {
-        parse_mode: "Markdown",
-      });
-      return bot.answerCallbackQuery(query.id);
+      await bot.sendMessage(
+        chatId,
+        `✅ Subjects updated to:\n*${subjects.join(", ")}*`,
+        { parse_mode: "Markdown" }
+      );
     }
   });
 
-  // ℹ️ /status — Show current settings
+  // /status — Show user settings
   bot.onText(/\/status/, async (msg) => {
     const chatId = msg.chat.id;
     const user = await User.findOne({ chatId });
@@ -74,10 +60,10 @@ function handleSettings(bot) {
 
     const statusMsg = `🧾 *Your Subscription Info:*
 
-📬 *Email:* ${user.email || "_Not set_"}
-📚 *Subjects:* ${user.subjects.join(", ") || "_None_"}
-✅ *Active:* ${user.active ? "Yes" : "No"}
-📅 *Last Question:* ${user.lastSent ? new Date(user.lastSent).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never"}`;
+*Email:* ${user.email || "_Not set_"}
+*Subjects:* ${user.subjects.join(", ") || "_None_"}
+*Active:* ${user.active ? "Yes" : "No"}
+*Last Question:* ${user.lastSent ? new Date(user.lastSent).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Never"}`;
 
     bot.sendMessage(chatId, statusMsg, { parse_mode: "Markdown" });
   });
