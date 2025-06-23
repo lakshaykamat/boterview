@@ -1,5 +1,4 @@
 const askCebras = require("./cebras");
-const openai = require("./openai");
 
 function extractJson(content) {
   const match = content.match(/\{[\s\S]*\}/);

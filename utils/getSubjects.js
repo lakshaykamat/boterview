@@ -1,6 +1,4 @@
 const askCebras = require("./cebras");
-const openai = require("./openai");
-
 
 
 
