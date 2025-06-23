@@ -1,4 +1,8 @@
+const askCebras = require("./cebras");
 const openai = require("./openai");
+
+
+
 
 function extractJson(content) {
   const match = content.match(/\[[\s\S]*\]/); // Look for a JSON array instead of object
@@ -7,8 +11,7 @@ function extractJson(content) {
 }
 
 async function getSubjectsFromR1(jobRole) {
-  try {
-    const prompt = `You are a career and interview preparation expert.
+  const PROMPT = `You are a career and interview preparation expert.
 
 Your task is to generate a focused list of exactly 5 core subjects that a candidate must prepare for technical interviews based on their desired job role.
 
@@ -34,14 +37,24 @@ Example (for Full Stack Developer):
 ]
 
 Now respond with only the JSON array of subjects for: "${jobRole}".`;
+  // try {
+  //   const completion = await openai.chat.completions.create({
+  //     model: "deepseek/deepseek-r1-0528:free",
+  //     messages: [{ role: "user", content: prompt }],
+  //   });
 
-    const completion = await openai.chat.completions.create({
-      model: "deepseek/deepseek-r1-0528:free",
-      messages: [{ role: "user", content: prompt }],
-    });
+  //   const rawContent = completion.choices[0].message.content;
+  //   const parsed = extractJson(rawContent);
 
-    const rawContent = completion.choices[0].message.content;
-    const parsed = extractJson(rawContent);
+  //   console.log("Subjects for", jobRole + ":", parsed);
+  //   return parsed;
+  // } catch (error) {
+  //   console.error("Error getting subjects from R1:", error.message);
+  //   throw error;
+  // }
+  try {
+    const response = askCebras(PROMPT)
+    const parsed = extractJson(response);
 
     console.log("Subjects for", jobRole + ":", parsed);
     return parsed;

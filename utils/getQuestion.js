@@ -1,5 +1,5 @@
+const askCebras = require("./cebras");
 const openai = require("./openai");
-
 
 function extractJson(content) {
   const match = content.match(/\{[\s\S]*\}/);
@@ -8,13 +8,8 @@ function extractJson(content) {
 }
 
 async function getQuestionFromR1(subjectName) {
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "deepseek/deepseek-r1-0528:free",
-      messages: [
-        {
-          role: 'user',
-          content: `You are an expert AI that ONLY returns valid JSON in the exact schema below:
+  
+const PROMPT = `You are an expert AI that ONLY returns valid JSON in the exact schema below:
 
 \`\`\`json
 {
@@ -55,13 +50,31 @@ Important Constraints:
 
 - Return ONLY the JSON object.
 - The answer must contain at least one of the formatting styles mentioned above.
-- The JSON must be valid and parsable.`,
-        },
-      ],
-    });
+- The JSON must be valid and parsable.`
 
-    const rawContent = completion.choices[0].message.content;
-    const parsed = extractJson(rawContent);
+  // try {
+  //   const completion = await openai.chat.completions.create({
+  //     model: "deepseek/deepseek-r1-0528:free",
+  //     messages: [
+  //       {
+  //         role: 'user',
+  //         content: prompt,
+  //       },
+  //     ],
+  //   });
+
+  //   const rawContent = completion.choices[0].message.content;
+  //   const parsed = extractJson(rawContent);
+
+  //   console.log("Parsed Question:", parsed);
+  //   return parsed;
+  // } catch (error) {
+  //   console.error("Error getting question from R1:", error);
+  //   throw error;
+  // }
+  try {
+    const response = await askCebras(PROMPT)
+    const parsed = extractJson(response);
 
     console.log("Parsed Question:", parsed);
     return parsed;
