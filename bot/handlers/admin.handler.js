@@ -61,12 +61,12 @@ function handleAdmin(bot) {
 
     const statsMessage = `📊 *Bot Stats*
 
-👥 Total users: ${total}
-✅ Active: ${active}
-⏸️ Paused: ${paused}
+Total users: ${total}
+Active: ${active}
+Paused: ${paused}
 
-🗃️ Total messages sent: ${logs}
-📅 Messages today: ${todayLogs}
+Total messages sent: ${logs}
+Messages today: ${todayLogs}
     `;
 
     bot.sendMessage(chatId, statsMessage, { parse_mode: "Markdown" });

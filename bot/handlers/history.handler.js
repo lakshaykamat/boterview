@@ -26,9 +26,9 @@ function handleHistory(bot) {
 
 -------------------------
 
-📚 *Subject:* ${q.subject}
-🧠 *Difficulty:* ${q.difficulty || "N/A"}
-📌 *Source:* ${q.source || "N/A"}
+*Subject:* ${q.subject}
+*Difficulty:* ${q.difficulty || "N/A"}
+*Source:* ${q.source || "N/A"}
 `;
 
       try {
