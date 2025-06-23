@@ -51,7 +51,7 @@ Now respond with only the JSON array of subjects for: "${jobRole}".`;
   //   throw error;
   // }
   try {
-    const response = askCebras(PROMPT)
+    const response = await askCebras(PROMPT)
     const parsed = extractJson(response);
 
     console.log("Subjects for", jobRole + ":", parsed);
