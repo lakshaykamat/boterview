@@ -1,4 +1,5 @@
 const askCebras = require("./cebras");
+const askOpenAI = require("./openai");
 
 function extractJson(content) {
   const match = content.match(/\{[\s\S]*\}/);
@@ -72,7 +73,7 @@ Important Constraints:
   //   throw error;
   // }
   try {
-    const response = await askCebras(PROMPT)
+    const response = await askOpenAI(PROMPT)
     const parsed = extractJson(response);
 
     console.log("Parsed Question:", parsed);
