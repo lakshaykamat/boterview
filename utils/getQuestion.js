@@ -1,5 +1,6 @@
 const askCebras = require("./cebras");
 const askOpenAI = require("./openai");
+const askOpenRouter = require("./openRouter");
 
 function extractJson(content) {
   const match = content.match(/\{[\s\S]*\}/);
@@ -52,28 +53,9 @@ Important Constraints:
 - The answer must contain at least one of the formatting styles mentioned above.
 - The JSON must be valid and parsable.`
 
-  // try {
-  //   const completion = await openai.chat.completions.create({
-  //     model: "deepseek/deepseek-r1-0528:free",
-  //     messages: [
-  //       {
-  //         role: 'user',
-  //         content: prompt,
-  //       },
-  //     ],
-  //   });
 
-  //   const rawContent = completion.choices[0].message.content;
-  //   const parsed = extractJson(rawContent);
-
-  //   console.log("Parsed Question:", parsed);
-  //   return parsed;
-  // } catch (error) {
-  //   console.error("Error getting question from R1:", error);
-  //   throw error;
-  // }
   try {
-    const response = await askOpenAI(PROMPT)
+    const response = await askOpenRouter(PROMPT)
     const parsed = extractJson(response);
 
     console.log("Parsed Question:", parsed);

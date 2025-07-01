@@ -1,7 +1,7 @@
 const { OpenAI } = require('openai');
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY',
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 async function askOpenAI(prompt) {
@@ -12,7 +12,7 @@ async function askOpenAI(prompt) {
         content: prompt,
       }
     ],
-    model: 'gpt-4',
+    model: 'gpt-4o',
     stream: true,
     max_tokens: 2048,
     temperature: 0.2,

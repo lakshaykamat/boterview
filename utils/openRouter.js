@@ -8,4 +8,29 @@ const openai = new OpenAI({
     'X-Title': '<YOUR_SITE_NAME>',
   },
 });
-module.exports = openai
+
+const askOpenRouter = async (prompt)=>{
+    try {
+    const completion = await openai.chat.completions.create({
+      model: "deepseek/deepseek-r1-0528:free",
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    });
+
+    const rawContent = completion.choices[0].message.content;
+    const parsed = extractJson(rawContent);
+
+    console.log("Parsed Question:", parsed);
+    return parsed;
+  } catch (error) {
+    console.error("Error getting question from R1:", error);
+    throw error;
+  }
+  
+
+}
+module.exports = askOpenRouter

@@ -1,5 +1,6 @@
 const askCebras = require("./cebras");
 const askOpenAI = require("./openai");
+const askOpenRouter = require("./openRouter");
 
 
 
@@ -52,7 +53,7 @@ Now respond with only the JSON array of subjects for: "${jobRole}".`;
   //   throw error;
   // }
   try {
-    const response = await askOpenAI(PROMPT)
+    const response = await askOpenRouter(PROMPT)
     const parsed = extractJson(response);
 
     console.log("Subjects for", jobRole + ":", parsed);
