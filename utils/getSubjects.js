@@ -10,7 +10,7 @@ function extractJson(content) {
   return JSON.parse(match[0]);
 }
 
-async function getSubjectsFromR1(jobRole) {
+async function getSubjects(jobRole) {
   const PROMPT = `You are a career and interview preparation expert.
 
 Your task is to generate a focused list of exactly 5 core subjects that a candidate must prepare for technical interviews based on their desired job role.
@@ -53,7 +53,7 @@ Now respond with only the JSON array of subjects for: "${jobRole}".`;
   //   throw error;
   // }
   try {
-    const response = await askOpenRouter(PROMPT)
+    const response = await askOpenAI(PROMPT)
     const parsed = extractJson(response);
 
     console.log("Subjects for", jobRole + ":", parsed);
@@ -64,4 +64,4 @@ Now respond with only the JSON array of subjects for: "${jobRole}".`;
   }
 }
 
-module.exports = getSubjectsFromR1;
+module.exports = getSubjects;

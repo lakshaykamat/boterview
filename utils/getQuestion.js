@@ -8,7 +8,7 @@ function extractJson(content) {
   return JSON.parse(match[0]);
 }
 
-async function getQuestionFromR1(subjectName) {
+async function getQuestion(subjectName) {
   
 const PROMPT = `You are an expert AI that ONLY returns valid JSON in the exact schema below:
 
@@ -55,7 +55,7 @@ Important Constraints:
 
 
   try {
-    const response = await askOpenRouter(PROMPT)
+    const response = await askOpenAI(PROMPT)
     const parsed = extractJson(response);
 
     console.log("Parsed Question:", parsed);
@@ -66,4 +66,4 @@ Important Constraints:
   }
 }
 
-module.exports = getQuestionFromR1;
+module.exports = getQuestion;

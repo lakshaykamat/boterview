@@ -1,6 +1,6 @@
 const { bot } = require("../bot/telegramBot");
 const Question = require("../models/Question");
-const getQuestionFromR1 = require("../utils/getQuestion");
+const getQuestion = require("../utils/getQuestion");
 
 // Replace with your own Telegram chat ID or set via ENV
 const TEST_CHAT_ID = process.env.ADMIN_CHATID || "YOUR_TELEGRAM_CHAT_ID";
@@ -8,7 +8,7 @@ const TEST_CHAT_ID = process.env.ADMIN_CHATID || "YOUR_TELEGRAM_CHAT_ID";
 const sendTestQuestionToAdmin = async () => {
   try {
     console.log("Test message process is start")
-    const q = await getQuestionFromR1('MS Excel')
+    const q = await getQuestion('MS Excel')
     if (!q) {
       console.warn("⚠️ No questions found in the database.");
       return;
