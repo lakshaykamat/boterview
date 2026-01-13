@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const sendEmail = require("../services/emailService");
 const { getRandomQuestionBySubject } = require("../utils/questionLoader");
+const logger = require("../utils/logger");
 
 const sendQuestionsToUsers = async () => {
   const users = await User.find({ active: true });
@@ -14,7 +15,7 @@ const sendQuestionsToUsers = async () => {
 
     const question = await getRandomQuestionBySubject(randomSubject);
     if (!question) {
-      console.log(
+      logger.warn(
         `⚠️ No question found for subject "${randomSubject}" for user ${user.email}`
       );
       continue;

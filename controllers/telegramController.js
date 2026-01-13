@@ -3,6 +3,7 @@ const User = require("../models/User");
 const { bot } = require("../bot/telegramBot");
 const MessageLog = require("../models/MessageLog");
 const getQuestionFromR1 = require("../utils/getQuestion");
+const logger = require("../utils/logger");
 
 const sendTelegramQuestion = async () => {
   const users = await User.find({ active: true, chatId: { $ne: null } });
@@ -19,7 +20,7 @@ const sendTelegramQuestion = async () => {
         subjectTried =
           user.subjects[Math.floor(Math.random() * user.subjects.length)];
 
-        console.log(subjectTried);
+        logger.debug(`Fetching question for subject: ${subjectTried} (user: ${user._id})`);
         const result = await getQuestionFromR1(subjectTried);
 
         if (!result || typeof result !== "object") continue;
@@ -27,9 +28,8 @@ const sendTelegramQuestion = async () => {
         q = result;
         break; // Valid question found
       } catch (err) {
-        console.warn(
-          `⚠️ Attempt ${attempt + 1} failed for user ${user._id}:`,
-          err.message
+        logger.warn(
+          `⚠️ Attempt ${attempt + 1} failed for user ${user._id}: ${err.message}`
         );
         continue;
       }
@@ -64,9 +64,8 @@ const sendTelegramQuestion = async () => {
         source: q.source,
       });
     } catch (err) {
-      console.error(
-        `❌ Failed to save question for user ${user._id}:`,
-        err.message
+      logger.error(
+        `❌ Failed to save question for user ${user._id}: ${err.message}`
       );
 
       await MessageLog.create({
@@ -85,7 +84,7 @@ const sendTelegramQuestion = async () => {
       continue;
     }
 
-    const message = `*${q.question}*\n\n${q.answer}
+    let message = `*${q.question}*\n\n${q.answer}
 
 -------------------------
 
@@ -94,9 +93,14 @@ const sendTelegramQuestion = async () => {
 *Source:* ${q.source || "Unknown"}
 `;
 
+    // Check message length (Telegram limit is 4096 characters)
+    if (message.length > 4096) {
+      message = message.substring(0, 4090) + "...";
+    }
+
     try {
       await bot.sendMessage(user.chatId, message, {
-        parse_mode: "Markdown", // Enable Markdown parsing
+        parse_mode: "Markdown",
         reply_markup: {
           inline_keyboard: [
             [
@@ -128,9 +132,8 @@ const sendTelegramQuestion = async () => {
         }
       );
     } catch (err) {
-      console.error(
-        `❌ Failed to send message to user ${user._id}:`,
-        err.message
+      logger.error(
+        `❌ Failed to send message to user ${user._id}: ${err.message}`
       );
 
       await MessageLog.create({

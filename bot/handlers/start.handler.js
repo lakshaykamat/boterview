@@ -1,5 +1,6 @@
 const User = require("../../models/User");
 const getSubjectsFromR1 = require("../../utils/getSubjects");
+const logger = require("../../utils/logger");
 
 const userSubjectSelections = new Map();
 const pendingEmailInput = new Set();
@@ -67,6 +68,12 @@ function handleStart(bot) {
 
     // Handle job role input
     if (pendingJobRoleInput.has(chatId)) {
+      if (!text || text.trim().length < 2) {
+        return bot.sendMessage(
+          chatId,
+          "❌ Please enter a valid job role (minimum 2 characters):"
+        );
+      }
       pendingJobRoleInput.delete(chatId);
 
       await bot.sendMessage(
@@ -108,7 +115,7 @@ ${subjects.map((s, i) => `${i + 1}. ${s}`).join("\n")}
           }
         );
       } catch (err) {
-        console.error("Subject generation error:", err);
+        logger.error(`Subject generation error for chat ${chatId}: ${err.message}`, err);
         await bot.sendMessage(
           chatId,
           "❌ Failed to fetch subjects. Please try again."
@@ -145,7 +152,7 @@ ${subjects.map((s, i) => `${i + 1}. ${s}`).join("\n")}
         chatId,
         `✅ Subscribed!\n📚 Subjects: *${subjects.join(
           ", "
-        )}*\n\nYou'll now receive questions at 9 AM, 12 PM, 3 PM, 6 PM, and 9 PM daily.`,
+        )}*\n\nYou'll now receive questions every 2 hours.`,
         {
           parse_mode: "Markdown",
           ...mainMenuKeyboard,

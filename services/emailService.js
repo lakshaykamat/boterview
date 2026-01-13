@@ -33,15 +33,14 @@ const sendEmail = async (user, question) => {
 
   const mailOptions = {
     from: `"Interview Mailer" <${process.env.EMAIL_USER}>`,
-    to:user.email,
+    to: user.email,
     subject: question.question,
     html: emailHTML,
   };
   try {
-    logger.info(`Preparing to send email to: ${user.email} for  question id - ${question._id}`);
+    logger.info(`Preparing to send email to: ${user.email} for question id - ${question._id}`);
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent to ${user.email}: ${info.response}`);
-    logger.info(`Email sent successfully to ${user.email}`);
+    logger.info(`✅ Email sent to ${user.email}: ${info.response}`);
     await EmailLog.create({
       userId: user._id,
       email: user.email,
@@ -50,12 +49,11 @@ const sendEmail = async (user, question) => {
       status: "sent",
     });
   } catch (err) {
-    console.error(`❌ Failed to send email to ${user.email}:`, err.message);
-    logger.error(`Failed to send email to ${user.email}`, err);
+    logger.error(`❌ Failed to send email to ${user.email}: ${err.message}`, err);
     await EmailLog.create({
       userId: user._id,
       email: user.email,
-      subject: subject,
+      subject: question.subject,
       questionId: question._id || null,
       status: "failed",
       error: err.message,

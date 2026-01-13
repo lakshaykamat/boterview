@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       sparse: true,
-      required: true,
+      required: false,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"],
     },
     chatId: {

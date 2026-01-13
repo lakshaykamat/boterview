@@ -1,67 +1,100 @@
-const askCebras = require("./cebras");
 const askOpenAI = require("./openai");
-const askOpenRouter = require("./openRouter");
+const logger = require("./logger");
 
 function extractJson(content) {
-  const match = content.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error("No valid JSON found in response");
-  return JSON.parse(match[0]);
+  if (!content || typeof content !== 'string') {
+    throw new Error("Invalid response content");
+  }
+
+  // Remove markdown code blocks if present
+  let cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+
+  // Try to find JSON object - look for object pattern
+  let match = cleaned.match(/\{[\s\S]*\}/);
+
+  // If no match, try parsing the whole cleaned content
+  if (!match) {
+    cleaned = cleaned.trim();
+    if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
+      match = [cleaned];
+    }
+  }
+
+  if (!match) {
+    logger.error(`Failed to extract JSON. Response: ${content.substring(0, 200)}`);
+    throw new Error("No valid JSON found in response");
+  }
+
+  try {
+    return JSON.parse(match[0]);
+  } catch (parseError) {
+    logger.error(`JSON parse error. Content: ${match[0].substring(0, 200)}`);
+    throw new Error(`Failed to parse JSON: ${parseError.message}`);
+  }
+}
+
+function validateQuestion(question, subjectName) {
+  const required = ['number', 'question', 'difficulty', 'answer', 'source', 'subject'];
+  const missing = required.filter(field => !question[field]);
+  if (missing.length) throw new Error(`Missing fields: ${missing.join(', ')}`);
+
+  if (question.subject !== subjectName) {
+    throw new Error(`Subject mismatch: expected "${subjectName}"`);
+  }
+
+  const validDifficulties = ['Beginner', 'Intermediate', 'Advanced'];
+  if (!validDifficulties.includes(question.difficulty)) {
+    throw new Error(`Invalid difficulty: "${question.difficulty}"`);
+  }
 }
 
 async function getQuestion(subjectName) {
-  
-const PROMPT = `You are an expert AI that ONLY returns valid JSON in the exact schema below:
+  const PROMPT = `You are an expert technical interview question generator. Your task is to create a high-quality interview question and answer for the subject: "${subjectName}".
 
-\`\`\`json
+CRITICAL: You MUST return ONLY a valid JSON object with no additional text, markdown, or explanations before or after it.
+
+Required JSON Schema:
 {
-  "number": Number,
-  "question": String,
-  "difficulty": "Begginner" | "Intermediate" | "Advanced",
-  "answer": String,
-  "source": String,
-  "subject": String
+  "number": <positive integer>,
+  "question": "<string - concise interview question>",
+  "difficulty": "Beginner" | "Intermediate" | "Advanced",
+  "answer": "<string - detailed answer with markdown formatting>",
+  "source": "<string - source or origin of question>",
+  "subject": "${subjectName}"
 }
-\`\`\`
 
-Output Requirements:
+Field Requirements:
 
-- You MUST return only a single valid JSON object. Do not include any comments, markdown syntax, explanations, or surrounding text.
-- Each field in the JSON must contain accurate, realistic, and interview-relevant content.
-- The subject field must exactly match: ${subjectName}.
-- The question should be concise but clear, suitable for technical interviews.
-- The answer must:
+1. number: A positive integer (e.g., 1, 2, 3...)
+2. question: A clear, concise technical interview question (10+ characters). Should be specific and test practical knowledge.
+3. difficulty: Must be exactly one of: "Beginner", "Intermediate", or "Advanced"
+4. answer: A comprehensive, technically accurate answer (20+ characters) that includes:
+   - Clear explanation of concepts
+   - Use markdown formatting:
+     * **bold** for emphasis
+     * __italic__ for subtle emphasis
+     * \`\`\`language for code blocks with language specification
+   - Code examples when relevant
+   - Best practices or edge cases when applicable
+5. source: Origin of the question (e.g., "LeetCode", "System Design Interview", "Common Interview Question", etc.)
+6. subject: Must exactly match "${subjectName}"
 
-  - Use special formatting where appropriate:
+Quality Standards:
+- The question should be realistic and commonly asked in technical interviews
+- The answer must be accurate, complete, and educational
+- Code examples should be syntactically correct
+- The difficulty level should accurately reflect the complexity
 
-    - Enclose bold text with double asterisks → \`**text**\`
-    - Enclose italic text with double underscores → \`__text__\`
-    - Enclose monospaced/code text with triple backticks → \`\`\`text\`\`\`
-
-  - For code blocks, use:
-    - Triple backticks and specify the language (e.g., \`\`\`javascript)
-    - Example:
-
-\`\`\`javascript
-console.log("Hello, World!");
-\`\`\`
-
-- The answer should be complete, technically correct, and formatted cleanly with the rules above.
-
-Important Constraints:
-
-- Return ONLY the JSON object.
-- The answer must contain at least one of the formatting styles mentioned above.
-- The JSON must be valid and parsable.`
-
+Output Format:
+Return ONLY the JSON object. No markdown code blocks, no explanations, no additional text. Just the raw JSON.`;
 
   try {
-    const response = await askOpenAI(PROMPT)
+    const response = await askOpenAI(PROMPT);
     const parsed = extractJson(response);
-
-    console.log("Parsed Question:", parsed);
+    validateQuestion(parsed, subjectName);
     return parsed;
   } catch (error) {
-    console.error("Error getting question from R1:", error);
+    logger.error(`Error getting question for "${subjectName}": ${error.message}`);
     throw error;
   }
 }

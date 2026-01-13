@@ -1,34 +1,19 @@
 const cron = require("node-cron");
 const sendNextQuestion = require("../controllers/emailController");
 const sendTelegramQuestion = require("../controllers/telegramController");
+const logger = require("../utils/logger");
 
 const scheduleEmails = () => {
-  // Define the times in IST (India Standard Time)
-  const times = [
-    "0 9 * * *",
-    "0 12 * * *",
-    "0 15 * * *",
-    "0 18 * * *",
-    "0 21 * * *",
-  ];
-
-  // Schedule the jobs using IST timezone
-  times.forEach((time) => {
-    cron.schedule(time, sendNextQuestion, {
-      timezone: "Asia/Kolkata", // Specify the timezone as IST
-    });
-    console.log(`📆 Scheduled question email at: ${time} IST`);
+  cron.schedule("0 */2 * * *", sendNextQuestion, {
+    timezone: "Asia/Kolkata",
   });
+  logger.info("📆 Scheduled question emails every 2 hours (IST)");
 };
 
 const scheduleTelegramMessage = () => {
-  const times = ['0 9 * * *', '0 12 * * *', '0 15 * * *', '0 18 * * *', '0 21 * * *'];
-  //const times = ['*/5 * * * * *']
-  times.forEach((time) => {
-    cron.schedule(time, sendTelegramQuestion, {
-      timezone: "Asia/Kolkata",
-    });
-    console.log(`📨 Scheduled Telegram message at: ${time} IST`);
+  cron.schedule("0 */2 * * *", sendTelegramQuestion, {
+    timezone: "Asia/Kolkata",
   });
+  logger.info("📨 Scheduled Telegram messages every 2 hours (IST)");
 };
 module.exports = { scheduleEmails, scheduleTelegramMessage };

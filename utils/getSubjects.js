@@ -1,65 +1,98 @@
-const askCebras = require("./cebras");
 const askOpenAI = require("./openai");
-const askOpenRouter = require("./openRouter");
-
-
+const logger = require("./logger");
 
 function extractJson(content) {
-  const match = content.match(/\[[\s\S]*\]/); // Look for a JSON array instead of object
-  if (!match) throw new Error("No valid JSON array found in response");
-  return JSON.parse(match[0]);
+  if (!content || typeof content !== 'string') {
+    throw new Error("Invalid response content");
+  }
+
+  // Remove markdown code blocks if present
+  let cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+
+  // Try to find JSON array - look for array pattern
+  let match = cleaned.match(/\[[\s\S]*\]/);
+
+  // If no match, try parsing the whole cleaned content
+  if (!match) {
+    cleaned = cleaned.trim();
+    if (cleaned.startsWith('[') && cleaned.endsWith(']')) {
+      match = [cleaned];
+    }
+  }
+
+  if (!match) {
+    logger.error(`Failed to extract JSON. Response: ${content.substring(0, 200)}`);
+    throw new Error("No valid JSON array found in response");
+  }
+
+  try {
+    return JSON.parse(match[0]);
+  } catch (parseError) {
+    logger.error(`JSON parse error. Content: ${match[0].substring(0, 200)}`);
+    throw new Error(`Failed to parse JSON array: ${parseError.message}`);
+  }
+}
+
+function validateSubjects(subjects) {
+  if (!Array.isArray(subjects) || subjects.length !== 5) {
+    throw new Error(`Expected array of 5 subjects, got ${Array.isArray(subjects) ? subjects.length : typeof subjects}`);
+  }
+
+  subjects.forEach((s, i) => {
+    if (typeof s !== 'string' || !s.trim()) {
+      throw new Error(`Invalid subject at index ${i}`);
+    }
+  });
 }
 
 async function getSubjects(jobRole) {
-  const PROMPT = `You are a career and interview preparation expert.
+  const PROMPT = `You are a career and technical interview preparation expert. Your task is to generate exactly 5 core technical subjects that a candidate must master for technical interviews based on their desired job role.
 
-Your task is to generate a focused list of exactly 5 core subjects that a candidate must prepare for technical interviews based on their desired job role.
+Job Role: "${jobRole}"
 
-Instructions:
+CRITICAL: You MUST return ONLY a valid JSON array with no additional text, markdown, or explanations before or after it.
 
-- The input is: "${jobRole}"
-- Based on this role, return only a JSON array of 5 subject names.
-- Subjects must be:
-  - Highly relevant to this role.
-  - Commonly asked in technical interviews.
-  - Specific and meaningful (e.g., "SQL", not "Databases").
-- List subjects from most to least important.
-- Do NOT include explanations, markdown, or comments. Return only the valid JSON array.
+Required Output Format:
+["Subject1", "Subject2", "Subject3", "Subject4", "Subject5"]
 
-Example (for Full Stack Developer):
+Subject Selection Criteria:
+1. Highly relevant to the job role "${jobRole}"
+2. Commonly tested in technical interviews for this role
+3. Specific and actionable (e.g., "SQL" not "Databases", "React" not "Frontend")
+4. Ordered from most important to least important
+5. Cover both fundamental concepts and practical skills
+6. Include a mix of:
+   - Core programming languages/frameworks
+   - System design or architecture (if applicable)
+   - Data structures and algorithms
+   - Domain-specific knowledge
 
-[
-  "JavaScript",
-  "React",
-  "Node.js",
-  "System Design",
-  "Database Design"
-]
+Examples:
 
-Now respond with only the JSON array of subjects for: "${jobRole}".`;
-  // try {
-  //   const completion = await openai.chat.completions.create({
-  //     model: "deepseek/deepseek-r1-0528:free",
-  //     messages: [{ role: "user", content: prompt }],
-  //   });
+For "Full Stack Developer":
+["JavaScript", "React", "Node.js", "System Design", "Database Design"]
 
-  //   const rawContent = completion.choices[0].message.content;
-  //   const parsed = extractJson(rawContent);
+For "Data Scientist":
+["Python", "Machine Learning", "SQL", "Statistics", "Data Structures"]
 
-  //   console.log("Subjects for", jobRole + ":", parsed);
-  //   return parsed;
-  // } catch (error) {
-  //   console.error("Error getting subjects from R1:", error.message);
-  //   throw error;
-  // }
+For "DevOps Engineer":
+["Linux", "Docker", "Kubernetes", "CI/CD", "Cloud Infrastructure"]
+
+Quality Requirements:
+- Each subject should be a single, clear topic (2-30 characters)
+- Avoid generic terms like "Programming" or "Coding"
+- Focus on interview-relevant technical skills
+- Ensure subjects are distinct and non-overlapping
+
+Return ONLY the JSON array. No markdown, no code blocks, no explanations.`;
+
   try {
-    const response = await askOpenAI(PROMPT)
+    const response = await askOpenAI(PROMPT);
     const parsed = extractJson(response);
-
-    console.log("Subjects for", jobRole + ":", parsed);
+    validateSubjects(parsed);
     return parsed;
   } catch (error) {
-    console.error("Error getting subjects from R1:", error.message);
+    logger.error(`Error getting subjects for "${jobRole}": ${error.message}`);
     throw error;
   }
 }
