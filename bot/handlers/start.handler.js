@@ -152,7 +152,7 @@ ${subjects.map((s, i) => `${i + 1}. ${s}`).join("\n")}
         chatId,
         `✅ Subscribed!\n📚 Subjects: *${subjects.join(
           ", "
-        )}*\n\nYou'll now receive questions every 2 hours.`,
+        )}*\n\nYou'll now receive questions every 6 hours.`,
         {
           parse_mode: "Markdown",
           ...mainMenuKeyboard,
